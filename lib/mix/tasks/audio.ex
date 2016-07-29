@@ -15,6 +15,7 @@ defmodule Mix.Tasks.Audio do
 
     def do_process(%{"token" => token}) do
         HTTPotion.start
+        HTTPoison.start
         Application.start(:inets)
         %HTTPotion.Response{body: body} = HTTPotion.get(sprintf("https://api.vk.com/method/audio.get?access_token=%s", [token]))
         path = Application.get_env(:etunes, :audio_path)
@@ -22,7 +23,10 @@ defmodule Mix.Tasks.Audio do
             File.mkdir(path)
         end
         data = Poison.Parser.parse!(body)
-        Enum.each(data["response"], &save_audio(&1, path))
+        blocks = data["response"] |> Enum.chunk(4)
+        Enum.each(blocks, fn files ->
+            ParallelStream.each(files, &save_audio(&1, path)) |> Enum.into([])
+        end)
     end
 
     def do_process(_) do
@@ -38,11 +42,17 @@ defmodule Mix.Tasks.Audio do
         Logger.info '#{name} (#{url})'
         path = '#{path}/#{name}'
         if !File.exists?(path) do
-            %HTTPotion.Response{body: body} = HTTPotion.get!(url, [timeout: :infinity])
-            File.write!(path, body)
-            info = File.stat!(path)
-            size = round(info.size / 10000) / 100
-            Logger.debug '#{name} (#{size} MB)'
+            response = HTTPoison.get(url, [timeout: :infinity])
+            case response do
+                {:ok, %HTTPoison.Response{body: body}} ->
+                    File.write!(path, body)
+                    info = File.stat!(path)
+                    size = round(info.size / 10000) / 100
+                    Logger.debug '#{name} (#{size} MB)'
+                {:error, %HTTPoison.Error{reason: message}} ->
+                    Logger.error '#{name} (#{message})'
+            end
         end
+        nil
     end
 end

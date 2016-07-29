@@ -4,17 +4,14 @@
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
+1. Install [elixir](http://elixir-lang.org/install.html)
 
-  1. Add etunes to your list of dependencies in `mix.exs`:
+2. Install project deps:
 
-        def deps do
-          [{:etunes, "~> 0.0.1"}]
-        end
+```
+mix deps.get
+```
 
-  2. Ensure etunes is started before your application:
+3. Run `mix audio` and read carefully about how to get access_token
 
-        def application do
-          [applications: [:etunes]]
-        end
-
+4. Download music `mix audio token ****` to `audio` directory

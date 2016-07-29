@@ -34,7 +34,9 @@ defmodule Etunes.Mixfile do
         [
             {:exprintf, "~> 0.1.6"},
             {:httpotion, "~> 3.0.0"},
-            {:poison, "~> 2.0"}
+            {:poison, "~> 2.0"},
+            {:parallel_stream, "~> 1.0.5"},
+            {:httpoison, "~> 0.9.0"}
         ]
     end
 end
